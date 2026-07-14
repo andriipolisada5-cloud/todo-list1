@@ -83,7 +83,7 @@ function addNewTask() {
     let text = taskInput.value.trim();
     
     if (text === "") {
-        alert("Эй! Нельзя добавить пустую задачу!");
+        alert("Hey! You can't add an empty task!");
         return; 
     }
     
