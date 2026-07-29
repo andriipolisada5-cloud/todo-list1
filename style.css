@@ -245,13 +245,13 @@ body {
 
 .drawer {
   position: fixed;
-  right: -400px;                
+  right: -400px;
   top: 0;
   width: 360px;
   height: 100vh;
   background: white;
   box-shadow: -4px 0 24px rgba(0, 0, 0, 0.1);
-  transition: right 0.3s ease;  
+  transition: right 0.3s ease;
   padding: 24px;
   display: flex;
   flex-direction: column;
