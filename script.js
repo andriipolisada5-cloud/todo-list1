@@ -83,12 +83,18 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     function addNewTask() {
-        let text = taskInput.value.trim();
+        const inputField = document.getElementById('task-input');
+        if (!inputField) return;
+
+        let text = inputField.value.trim();
+        
+      
         if (text === "") {
             alert("Hey! You can't add an empty task!");
             return;
         }
 
+        
         todos.push({
             text: text,
             completed: false,
@@ -96,9 +102,10 @@ document.addEventListener('DOMContentLoaded', function () {
         });
 
         saveToLocalStorage();
-        taskInput.value = '';
+        inputField.value = '';
         render();
-        taskInput.focus();
+        inputField.focus();
+    }
     }
     function openDrawer(index) {
         currentEditingIndex = index;
