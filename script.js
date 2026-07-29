@@ -1,15 +1,17 @@
 document.addEventListener('DOMContentLoaded', function () {
-    
     const taskInput = document.getElementById('task-input');
     const addButton = document.getElementById('add-btn');
     const taskList = document.getElementById('task-list');
     const searchInput = document.getElementById('search-input');
+    
     const totalCount = document.getElementById('total-count');
     const completedCount = document.getElementById('completed-count');
     const remainingCount = document.getElementById('remaining-count');
+    
     const filterAll = document.getElementById('filter-all');
     const filterActive = document.getElementById('filter-active');
     const filterCompleted = document.getElementById('filter-completed');
+
     const drawer = document.getElementById('task-drawer');
     const closeDrawerBtn = document.getElementById('close-drawer-btn');
     const cancelDrawerBtn = document.getElementById('cancel-drawer-btn');
@@ -20,13 +22,14 @@ document.addEventListener('DOMContentLoaded', function () {
 
     let todos = JSON.parse(localStorage.getItem('myTodos')) || [];
     let currentFilter = 'all';
-    let currentEditingIndex = null; 
+    let currentEditingIndex = null;
 
     function saveToLocalStorage() {
         localStorage.setItem('myTodos', JSON.stringify(todos));
     }
 
     function updateStatistics() {
+        if (!totalCount || !completedCount || !remainingCount) return;
         let total = todos.length;
         let completed = todos.filter(todo => todo.completed).length;
         let remaining = total - completed;
@@ -37,12 +40,13 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     function render() {
+        if (!taskList) return;
         taskList.innerHTML = '';
-        let searchText = searchInput.value.toLowerCase();
+        let searchText = searchInput ? searchInput.value.toLowerCase() : '';
 
         todos.forEach(function (todo, index) {
             let taskText = todo.text.toLowerCase();
-            if (!taskText.includes(searchText)) return;
+            if (searchText && !taskText.includes(searchText)) return;
             if (currentFilter === 'active' && todo.completed) return;
             if (currentFilter === 'completed' && !todo.completed) return;
 
@@ -64,7 +68,7 @@ document.addEventListener('DOMContentLoaded', function () {
             }
 
             checkbox.addEventListener('change', function (e) {
-                e.stopPropagation(); 
+                e.stopPropagation();
                 todo.completed = checkbox.checked;
                 saveToLocalStorage();
                 render();
@@ -83,18 +87,15 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     function addNewTask() {
-        const inputField = document.getElementById('task-input');
-        if (!inputField) return;
-
-        let text = inputField.value.trim();
+        if (!taskInput) return;
         
-      
+        let text = taskInput.value.trim();
+        
         if (text === "") {
-            alert("Hey! You can't add an empty task!");
+            alert("Please enter a task name!");
             return;
         }
 
-        
         todos.push({
             text: text,
             completed: false,
@@ -102,70 +103,86 @@ document.addEventListener('DOMContentLoaded', function () {
         });
 
         saveToLocalStorage();
-        inputField.value = '';
+        taskInput.value = '';
         render();
-        inputField.focus();
+        taskInput.focus();
     }
-    }
+
     function openDrawer(index) {
+        if (!drawer) return;
         currentEditingIndex = index;
         let task = todos[index];
         
-        editTaskTitle.value = task.text;
-        editTaskDesc.value = task.description || "";
+        if (editTaskTitle) editTaskTitle.value = task.text;
+        if (editTaskDesc) editTaskDesc.value = task.description || "";
         
-        drawer.classList.add('open'); 
+        drawer.classList.add('open');
     }
 
     function closeDrawer() {
+        if (!drawer) return;
         drawer.classList.remove('open');
         currentEditingIndex = null;
     }
-    saveDrawerBtn.addEventListener('click', function () {
-        if (currentEditingIndex !== null) {
-            let newTitle = editTaskTitle.value.trim();
-            if (newTitle !== "") {
-                todos[currentEditingIndex].text = newTitle;
-                todos[currentEditingIndex].description = editTaskDesc.value;
+
+    if (saveDrawerBtn) {
+        saveDrawerBtn.addEventListener('click', function () {
+            if (currentEditingIndex !== null && editTaskTitle) {
+                let newTitle = editTaskTitle.value.trim();
+                if (newTitle !== "") {
+                    todos[currentEditingIndex].text = newTitle;
+                    todos[currentEditingIndex].description = editTaskDesc ? editTaskDesc.value : "";
+                    saveToLocalStorage();
+                    render();
+                    closeDrawer();
+                }
+            }
+        });
+    }
+
+    if (deleteDrawerBtn) {
+        deleteDrawerBtn.addEventListener('click', function () {
+            if (currentEditingIndex !== null) {
+                todos.splice(currentEditingIndex, 1);
                 saveToLocalStorage();
                 render();
                 closeDrawer();
             }
-        }
-    });
+        });
+    }
 
-    deleteDrawerBtn.addEventListener('click', function () {
-        if (currentEditingIndex !== null) {
-            todos.splice(currentEditingIndex, 1);
-            saveToLocalStorage();
-            render();
-            closeDrawer();
-        }
-    });
+    if (closeDrawerBtn) closeDrawerBtn.addEventListener('click', closeDrawer);
+    if (cancelDrawerBtn) cancelDrawerBtn.addEventListener('click', closeDrawer);
 
-    closeDrawerBtn.addEventListener('click', closeDrawer);
-    cancelDrawerBtn.addEventListener('click', closeDrawer);
+    if (addButton) {
+        addButton.addEventListener('click', addNewTask);
+    }
 
-    addButton.addEventListener('click', addNewTask);
+    if (taskInput) {
+        taskInput.addEventListener('keydown', function (event) {
+            if (event.key === 'Enter') {
+                event.preventDefault();
+                addNewTask();
+            }
+        });
+    }
 
-    taskInput.addEventListener('keydown', function (event) {
-        if (event.key === 'Enter') addNewTask();
-    });
-
-    searchInput.addEventListener('input', render);
+    if (searchInput) {
+        searchInput.addEventListener('input', render);
+    }
 
     function setActiveFilter(filterName, activeBtn) {
         currentFilter = filterName;
-        
-        [filterAll, filterActive, filterCompleted].forEach(btn => btn.classList.remove('active'));
-        activeBtn.classList.add('active');
-        
+        [filterAll, filterActive, filterCompleted].forEach(btn => {
+            if (btn) btn.classList.remove('active');
+        });
+        if (activeBtn) activeBtn.classList.add('active');
         render();
     }
 
-    filterAll.addEventListener('click', () => setActiveFilter('all', filterAll));
-    filterActive.addEventListener('click', () => setActiveFilter('active', filterActive));
-    filterCompleted.addEventListener('click', () => setActiveFilter('completed', filterCompleted));
+    if (filterAll) filterAll.addEventListener('click', () => setActiveFilter('all', filterAll));
+    if (filterActive) filterActive.addEventListener('click', () => setActiveFilter('active', filterActive));
+    if (filterCompleted) filterCompleted.addEventListener('click', () => setActiveFilter('completed', filterCompleted));
 
     render();
 });
